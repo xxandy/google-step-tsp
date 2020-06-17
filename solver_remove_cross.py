@@ -18,7 +18,6 @@ def crossChecker(city1, city2, cities, tour):
 
     output cross_list : list [(index, index), ...]
     """
-    cross_list = []
     city1 = cities[city1]
     city2 = cities[city2]
     for i in range(len(tour[:-1])):
@@ -30,8 +29,8 @@ def crossChecker(city1, city2, cities, tour):
         t3 = (city4[0] - city3[0]) * (city1[1] - city3[1]) + (city4[1] - city3[1]) * (city3[0] - city1[0])
         t4 = (city4[0] - city3[0]) * (city2[1] - city3[1]) + (city4[1] - city3[1]) * (city3[0] - city2[0])
         if t1 * t2 < 0 and t3 * t4 < 0: #cross
-            cross_list.append((tour[i], tour[i + 1]))
-    return cross_list 
+            return tour[i], tour[i + 1]
+    return None, None
 
 
 def change_lines(city1, city2, city3, city4, tour):
@@ -46,21 +45,23 @@ def change_lines(city1, city2, city3, city4, tour):
 
 
 def removeCross(current_city, next_city, cities, tour):
-    cross_list = crossChecker(current_city, next_city, cities, tour)
+    city1, city2 = crossChecker(current_city, next_city, cities, tour)
     city3 = current_city
     city4 = next_city
     #print(cross_list)
-    for city1, city2 in cross_list[:1]:
+    if city1:
         if tour.index(city1) < tour.index(city3):
             c1, c2, c3, c4 = city1, city2, city3, city4
         else:
             c1, c2, c3, c4 = city3, city4, city1, city2
+        #print(tour.index(c1),tour.index(c2),tour.index(c3))
         tour = change_lines(c1, c2, c3, c4, tour)
-        city3, city4 = city1, city3
+        tour = removeCross(c1, c3, cities, tour)
+        tour = removeCross(c2, c4, cities, tour) 
     return tour
 
 
-def solve(cities):
+def solve(cities, start_city = 0):
     N = len(cities)
 
     dist = [[0] * N for i in range(N)]
@@ -68,7 +69,7 @@ def solve(cities):
         for j in range(i, N):
             dist[i][j] = dist[j][i] = distance(cities[i], cities[j])
 
-    current_city = 0
+    current_city = start_city
     unvisited_cities = set(range(1, N))
     tour = [current_city]
 
@@ -80,9 +81,12 @@ def solve(cities):
         tour = removeCross(current_city, next_city, cities, tour) 
         tour.append(next_city)
         current_city = next_city
-    #最後の1本
-    tour = removeCross(current_city, tour[0], cities, tour)
-    return tour
+    #最後の１本
+    next_city = tour.pop(0)
+    new_tour = removeCross(current_city, next_city, cities, tour)
+    if len(new_tour) != len(cities) - 1:
+        new_tour = tour
+    return [next_city] + new_tour
 
 
 if __name__ == '__main__':

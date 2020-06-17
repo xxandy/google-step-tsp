@@ -12,7 +12,7 @@ def makeOutputFile(input_path):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_path", required="True")
+parser.add_argument("--input-path", required="True")
 args = parser.parse_args()
 input_path = args.input_path
 
