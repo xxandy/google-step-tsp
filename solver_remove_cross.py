@@ -40,6 +40,9 @@ def change_lines(city1, city2, city3, city4, tour):
     """
     start = tour.index(city2)
     end = tour.index(city3)
+    
+    # ALEXNOTE: if you change an array passed in as a parameter, it makes
+    #          little sense to return it.   In fact, the data transfer from return is extra, unnecessary work
     tour = tour[:start] + tour[start : end + 1][::-1] + tour[end + 1:]
     return tour
 
@@ -74,6 +77,9 @@ def solve(cities, start_city = 0):
     tour = [current_city]
 
     while unvisited_cities:
+        # ALEXNOTE: I like the use of min() below -  just be careful
+        #           that this is implemented via a loop, so it makes it not
+        #           evident that the alrorightm becomes N2  (or more)
         next_city = min(unvisited_cities,
                         key=lambda city: dist[current_city][city])
         unvisited_cities.remove(next_city)
