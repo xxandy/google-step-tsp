@@ -4,6 +4,10 @@ import math
 
 from common import print_tour, read_input
 
+# ALEXNOTE: I thought the code is nicely organized, didn't find any points of significant improvement.
+#            but I may revisit after the explanation of the algorithm.
+
+
 #Kmeans法
 def update_label(cities, center, k):
     label = []
