@@ -5,6 +5,8 @@ import math
 import time
 import numpy as np
 
+from concurrent.futures import ThreadPoolExecutor 
+
 from common import print_tour, read_input
 
 
@@ -64,7 +66,8 @@ def remove_cross(tour, dist, flag = True):
     return tour
 
 
-def solve(cities):
+def solve_helper(cities, start_i):
+    print("start : ", start_i)
     N = len(cities)
 
     dist = [[0] * N for i in range(N)]
@@ -72,24 +75,23 @@ def solve(cities):
         for j in range(i, N):
             dist[i][j] = dist[j][i] = distance(cities[i], cities[j])
 
-    current_city = 0
+    current_city = start_i
     unvisited_cities = set(range(1, N))
     tour = [current_city]
 
     flag = 0
     while unvisited_cities and flag == 0:
-        tour1, unvisited_cities1, distance1 = sub_greedy(0, tour, unvisited_cities, dist, current_city)
-        tour2, unvisited_cities2, distance2 = sub_greedy(
-            1, tour, unvisited_cities, dist, current_city)
-        tour3, unvisited_cities3, distance3 = sub_greedy(
-            2, tour, unvisited_cities, dist, current_city)
-        tour4, unvisited_cities4, distance4 = sub_greedy(
-            3, tour, unvisited_cities, dist, current_city)
-        tour5, unvisited_cities5, distance5 = sub_greedy(
-            4, tour, unvisited_cities, dist, current_city)
-        distances = np.array([distance1, distance2, distance3, distance4, distance5])
-        can_tour = [tour1, tour2, tour3, tour4, tour5]
-        can_unvisited_cities = [unvisited_cities1, unvisited_cities2, unvisited_cities3, unvisited_cities4, unvisited_cities5]
+        how_far = [0,1,2,3,4]
+        executor = ThreadPoolExecutor(max_workers=5)
+        can_tour = []
+        can_unvisited_cities = []
+        distances = []
+        #Threadを使って５つの経路を同時探索し、最短のものを採用する。
+        for far in how_far:
+            future = executor.submit(sub_greedy, far, tour, unvisited_cities, dist, current_city)
+            can_tour.append(future.result()[0])
+            can_unvisited_cities.append(future.result()[1])
+            distances.append(future.result()[2])
         if None in distances:
             while unvisited_cities:
                 next_city = min(unvisited_cities,
@@ -103,12 +105,35 @@ def solve(cities):
             tour = can_tour[mi]
             unvisited_cities = can_unvisited_cities[mi]
     tour = remove_cross(tour, dist)
+    print("finish : ", start_i)
     return tour
 
+
+def solve(cities):
+    tours = []
+    N = len(cities)
+    executor = ThreadPoolExecutor(max_workers=N)
+    start_index = [i for i in range(N)]
+    #threadを用いて各スタート地点から始めた場合の経路を同時探索する
+    for start_i in start_index:
+        future = executor.submit(solve_helper, cities, start_i)
+        tours.append(future.result())
+    #経路が一番短いものを採用
+    ans_tour = None
+    min_length = float('inf')
+    for j in range(N):
+        tour = tours[i]
+        path_l = sum(distance(cities[tour[i]], cities[tour[(i + 1) % N]]) for i in range(N))
+        if path_l < min_length:
+            min_length = path_l
+            ans_tour = tour
+    return ans_tour
 
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1
     tour = solve(read_input(sys.argv[1]))
     print_tour(tour)
+    print("---")
+    print(len(tour))
     
