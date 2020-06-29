@@ -123,8 +123,7 @@ def solve(cities):
     #N>128ならランダムに10個のスタート地点を選ぶ
     start_list = [i for i in range(N)]
     if N > 128:
-        #start_list = random.sample(start_list, 10)
-        start_list = random.sample(start_list, 2)
+        start_list = random.sample(start_list, 10)
     thread_list = []
     tours = []
     for start_i in start_list:
