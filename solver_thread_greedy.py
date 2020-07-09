@@ -10,8 +10,12 @@ import threading
 
 from common import print_tour, read_input
 
+# ALEXNOTE: The threaded implementation is interesting.
+# Have you considered re-implementing in C++ ?  Given the difference we saw in other exercises
+
 
 def distance(city1, city2):
+    # ALEXNOTE: how about caching these results?  just in case there are common distances.
     return math.sqrt((city1[0] - city2[0]) ** 2 + (city1[1] - city2[1]) ** 2)
 
 
